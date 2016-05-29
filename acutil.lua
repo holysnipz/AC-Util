@@ -186,7 +186,7 @@ function acutil.setupEvent(myAddon, functionName, myFunctionName)
 		local result = pack2(pcall(_G['ADDONS']['EVENTS'][thisFuncName .. '_OLD'], ...));
 		_G['ADDONS']['EVENTS']['ARGS'][thisFuncName] = {...};
 		imcAddOn.BroadMsg(thisFuncName);
-		return unpack(result, i, result.n);
+		return unpack(result, 2, result.n);
 	end
 	]];
 
