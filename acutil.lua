@@ -175,12 +175,14 @@ _G['ADDONS'] = _G['ADDONS'] or {};
 _G['ADDONS']['EVENTS'] = _G['ADDONS']['EVENTS'] or {};
 _G['ADDONS']['EVENTS']['ARGS'] = _G['ADDONS']['EVENTS']['ARGS'] or {};
 
-function acutil.setupEvent(myAddon, functionName, myFunctionName)
+function acutil.setupEvent(myAddon, functionNameAbs, myFunctionName)
+	local functionName = string.gsub(functionNameAbs, "%.", "");
+
 	if _G['ADDONS']['EVENTS'][functionName .. "_OLD"] == nil then
-		_G['ADDONS']['EVENTS'][functionName .. "_OLD"] =  _G[functionName];
+		_G['ADDONS']['EVENTS'][functionName .. "_OLD"] = loadstring("return " .. functionNameAbs)();
 	end
 
-	local hookedFuncString = [[_G[']]..functionName..[['] = function(...)
+	local hookedFuncString = functionNameAbs ..[[ = function(...)
 		local function pack2(...) return {n=select('#', ...), ...} end
 		local thisFuncName = "]]..functionName..[[";
 		local result = pack2(pcall(_G['ADDONS']['EVENTS'][thisFuncName .. '_OLD'], ...));
@@ -235,7 +237,7 @@ function SYSMENU_CHECK_HIDE_VAR_ICONS_HOOKED(frame)
 	end
 end
 
-SETUP_HOOK(SYSMENU_CHECK_HIDE_VAR_ICONS_HOOKED, "SYSMENU_CHECK_HIDE_VAR_ICONS");
+acutil.setupHook(SYSMENU_CHECK_HIDE_VAR_ICONS_HOOKED, "SYSMENU_CHECK_HIDE_VAR_ICONS");
 
 local sysmenuFrame = ui.GetFrame("sysmenu");
 SYSMENU_CHECK_HIDE_VAR_ICONS(sysmenuFrame);
