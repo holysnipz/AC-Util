@@ -161,6 +161,26 @@ function acutil.textControlFactory(attributeName, isMainSection)
     return text;
 end
 
+function acutil.getItemRarityColor(itemObj)
+    local itemProp = geItemTable.GetProp(itemObj.ClassID);
+    local grade = itemObj.ItemGrade;
+
+    if (itemObj.ItemType == "Recipe") then
+        local recipeGrade = string.match(itemObj.Icon, "misc(%d)");
+        if recipeGrade ~= nil then
+            grade = tonumber(recipeGrade) - 1;
+        end
+    end
+
+    if (itemProp.setInfo ~= nil) then return "00FF00"; -- set piece
+    elseif (grade == 0) then return "FFBF33"; -- premium
+    elseif (grade == 1) then return "FFFFFF"; -- common
+    elseif (grade == 2) then return "108CFF"; -- rare
+    elseif (grade == 3) then return "9F30FF"; -- epic
+    elseif (grade == 4) then return "FF4F00"; -- legendary
+    else then return "E1E1E1"; -- no grade (non-equipment items)
+end
+
 function acutil.setupHook(newFunction, hookedFunctionStr)
 	local storeOldFunc = hookedFunctionStr .. "_OLD";
 	if _G[storeOldFunc] == nil then
