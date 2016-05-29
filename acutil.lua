@@ -1,4 +1,5 @@
 local acutil = {};
+local json = require('json')
 
 function acutil.addThousandsSeparator(amount)
 	local formatted = amount
@@ -218,9 +219,99 @@ function acutil.setupEvent(myAddon, functionNameAbs, myFunctionName)
 	myAddon:RegisterMsg(functionName, myFunctionName);
 end
 
+-- usage: 
+-- function myFunc(addonFrame, eventMsg)
+--     local arg1, arg2, arg3 = acutils.getEventArgs(eventMsg);
+-- end
 function acutil.getEventArgs(eventMsg)
 	return unpack(_G['ADDONS']['EVENTS']['ARGS'][eventMsg]);
 end
+
+function acutil.saveJSON(path, tbl)
+	file,err = io.open(path, "w")
+	if err then return _,err end
+
+	local s = json.encode(tbl);
+	file:write(s);
+	file:close();
+end
+
+-- tblMerge is optional, use this to merge new pairs from tblMerge while
+-- preserving the pairs set in the pre-existing config file
+function acutil.loadJSON(path, tblMerge)
+	local file, err=io.open(path,"r")
+	if err then return _,err end
+
+	local t = file:read("*all");
+	file:close();
+
+	t = json.decode(t);
+	if tblMerge then 
+		t = acutil.mergeLeft(tblMerge, t)
+		acutil.saveJSON(path, t);
+	end
+	return t;
+end
+
+-- merge left
+function acutil.mergeLeft(t1, t2)
+	for k, v in pairs(t2) do
+		if (type(v) == "table") and (type(t1[k] or false) == "table") then
+			acutil.mergeLeft(t1[k], t2[k])
+		else
+			t1[k] = v
+		end
+	end
+	return t1
+end
+
+-- credits to fiote for some code https://github.com/fiote/
+acutil.slashCommands = acutil.slashCommands or {};
+
+function acutil.slashCommand(cmd, fn)
+	if cmd:sub(1,1) ~= "/" then cmd = "/" .. cmd end
+	acutil.slashCommands[cmd] = fn;
+end
+
+function acutil.onUIChat(msg)
+	acutil.uiChat_OLD(msg);
+	
+	local words = {};
+	for word in msg:gmatch('%S+') do 
+		table.insert(words, word)
+	end
+
+	local cmd = table.remove(words,1);
+	for i,v in ipairs({"/r","/w","/p","/y","/s","/g"}) do
+		if (tostring(cmd) == tostring(v)) then
+			cmd = table.remove(words,1);
+			break;
+		end
+	end
+
+	local fn = acutil.slashCommands[cmd];
+	if (fn ~= nil) then
+		acutil.closeChat();
+		return fn(words);
+	end
+end
+
+function acutil.closeChat()
+	local chatFrame = GET_CHATFRAME();
+	local edit = chatFrame:GetChild('mainchat');
+
+	chatFrame:ShowWindow(0);
+	edit:ShowWindow(0);
+
+	ui.CloseFrame("chat_option");
+	ui.CloseFrame("chat_emoticon");
+end 
+
+-- alternate chat hook to avoid conflict with cwapi and lkchat
+if not acutil.uiChat_OLD then 
+	acutil.uiChat_OLD = ui.Chat;
+end
+ui.Chat = acutil.onUIChat;
 
 --TODO: turn into addon popup menu
 function SYSMENU_CHECK_HIDE_VAR_ICONS_HOOKED(frame)
