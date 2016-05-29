@@ -178,7 +178,8 @@ function acutil.getItemRarityColor(itemObj)
     elseif (grade == 2) then return "108CFF"; -- rare
     elseif (grade == 3) then return "9F30FF"; -- epic
     elseif (grade == 4) then return "FF4F00"; -- legendary
-    else then return "E1E1E1"; -- no grade (non-equipment items)
+    else return "E1E1E1"; -- no grade (non-equipment items)
+    end
 end
 
 function acutil.setupHook(newFunction, hookedFunctionStr)
