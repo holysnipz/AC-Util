@@ -167,10 +167,9 @@ function acutil.getItemRarityColor(itemObj)
     local grade = itemObj.ItemGrade;
 
     if (itemObj.ItemType == "Recipe") then
-        local recipeGrade = string.match(itemObj.Icon, "misc(%d)");
-        if recipeGrade ~= nil then
-            grade = tonumber(recipeGrade) - 1;
-        end
+        local recipeGrade = tonumber(itemObj.Icon:match("misc(%d)")) - 1;
+        if (recipeGrade <= 0) then recipeGrade = 1 end;
+        grade = recipeGrade;
     end
 
     if (itemProp.setInfo ~= nil) then return "00FF00"; -- set piece
