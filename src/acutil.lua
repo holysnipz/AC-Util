@@ -219,7 +219,7 @@ function acutil.setupEvent(myAddon, functionNameAbs, myFunctionName)
 	myAddon:RegisterMsg(functionName, myFunctionName);
 end
 
--- usage: 
+-- usage:
 -- function myFunc(addonFrame, eventMsg)
 --     local arg1, arg2, arg3 = acutils.getEventArgs(eventMsg);
 -- end
@@ -246,7 +246,7 @@ function acutil.loadJSON(path, tblMerge)
 	file:close();
 
 	t = json.decode(t);
-	if tblMerge then 
+	if tblMerge then
 		t = acutil.mergeLeft(tblMerge, t)
 		acutil.saveJSON(path, t);
 	end
@@ -275,9 +275,9 @@ end
 
 function acutil.onUIChat(msg)
 	acutil.uiChat_OLD(msg);
-	
+
 	local words = {};
-	for word in msg:gmatch('%S+') do 
+	for word in msg:gmatch('%S+') do
 		table.insert(words, word)
 	end
 
@@ -305,53 +305,12 @@ function acutil.closeChat()
 
 	ui.CloseFrame("chat_option");
 	ui.CloseFrame("chat_emoticon");
-end 
+end
 
 -- alternate chat hook to avoid conflict with cwapi and lkchat
-if not acutil.uiChat_OLD then 
+if not acutil.uiChat_OLD then
 	acutil.uiChat_OLD = ui.Chat;
 end
 ui.Chat = acutil.onUIChat;
-
---TODO: turn into addon popup menu
-function SYSMENU_CHECK_HIDE_VAR_ICONS_HOOKED(frame)
-	if false == VARICON_VISIBLE_STATE_CHANTED(frame, "necronomicon", "necronomicon")
-	and false == VARICON_VISIBLE_STATE_CHANTED(frame, "grimoire", "grimoire")
-	and false == VARICON_VISIBLE_STATE_CHANTED(frame, "guild", "guild")
-	and false == VARICON_VISIBLE_STATE_CHANTED(frame, "poisonpot", "poisonpot")
-	then
-		return;
-	end
-
-	DESTROY_CHILD_BY_USERVALUE(frame, "IS_VAR_ICON", "YES");
-
-	local status = frame:GetChild("status");
-	local inven = frame:GetChild("inven");
-	local offsetX = inven:GetX() - status:GetX();
-	local startX = status:GetMargin().left - offsetX;
-
-	startX = SYSMENU_CREATE_VARICON(frame, status, "guild", "guild", "sysmenu_guild", startX, offsetX, "Guild");
-	startX = SYSMENU_CREATE_VARICON(frame, status, "necronomicon", "necronomicon", "sysmenu_card", startX, offsetX);
-	startX = SYSMENU_CREATE_VARICON(frame, status, "grimoire", "grimoire", "sysmenu_neacro", startX, offsetX);
-	startX = SYSMENU_CREATE_VARICON(frame, status, "poisonpot", "poisonpot", "sysmenu_wugushi", startX, offsetX);
-	startX = SYSMENU_CREATE_VARICON(frame, status, "poisonpot", "poisonpot", "sysmenu_wugushi", startX, offsetX);
-	startX = SYSMENU_CREATE_VARICON(frame, status, "expcardcalculator", "expcardcalculator", "addonmenu_expcard", startX, offsetX, "Experience Card Calculator");
-	startX = SYSMENU_CREATE_VARICON(frame, status, "developerconsole", "developerconsole", "addonmenu_dev", startX, offsetX, "Developer Console");
-
-	local expcardcalculatorButton = GET_CHILD(frame, "expcardcalculator", "ui::CButton");
-	if expcardcalculatorButton ~= nil then
-		expcardcalculatorButton:SetTextTooltip("{@st59}Experience Card Calculator");
-	end
-
-	local developerconsoleButton = GET_CHILD(frame, "developerconsole", "ui::CButton");
-	if developerconsoleButton ~= nil then
-		developerconsoleButton:SetTextTooltip("{@st59}Developer Console");
-	end
-end
-
-acutil.setupHook(SYSMENU_CHECK_HIDE_VAR_ICONS_HOOKED, "SYSMENU_CHECK_HIDE_VAR_ICONS");
-
-local sysmenuFrame = ui.GetFrame("sysmenu");
-SYSMENU_CHECK_HIDE_VAR_ICONS(sysmenuFrame);
 
 return acutil;
