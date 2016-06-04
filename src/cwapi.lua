@@ -393,4 +393,3 @@ cwAPI.commands.register('/addons',showAddonsButton);
 cwAPI.commands.register('/reload',reloadAddons);
 
 return cwAPI;
-
