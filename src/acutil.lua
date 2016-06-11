@@ -1,5 +1,13 @@
 local acutil = {};
-local json = require('json')
+local json = require('json');
+
+_G['ADDONS'] = _G['ADDONS'] or {};
+_G['ADDONS']['EVENTS'] = _G['ADDONS']['EVENTS'] or {};
+_G['ADDONS']['EVENTS']['ARGS'] = _G['ADDONS']['EVENTS']['ARGS'] or {};
+
+-- ================================================================
+-- Strings
+-- ================================================================
 
 function acutil.addThousandsSeparator(amount)
 	local formatted = amount
@@ -29,6 +37,26 @@ function acutil.rightPad(str, len, char)
 
 	return str .. string.rep(char, len - #str)
 end
+
+function acutil.tostring(var) 
+    if (var == nil) then return 'nil'; end  
+    local tp = type(var); 
+    if (tp == 'string' or tp == 'number') then 
+        return var; 
+    end
+    if (tp == 'boolean') then 
+        if (var) then 
+            return 'true';
+        else
+            return 'false';
+        end
+    end
+    return tp;
+end
+
+-- ================================================================
+-- Player
+-- ================================================================
 
 function acutil.getStatPropertyFromPC(typeStr, statStr, pc)
     local errorText = "Param was nil";
@@ -162,6 +190,10 @@ function acutil.textControlFactory(attributeName, isMainSection)
     return text;
 end
 
+-- ================================================================
+-- Item
+-- ================================================================
+
 function acutil.getItemRarityColor(itemObj)
     local itemProp = geItemTable.GetProp(itemObj.ClassID);
     local grade = itemObj.ItemGrade;
@@ -182,6 +214,10 @@ function acutil.getItemRarityColor(itemObj)
     end
 end
 
+-- ================================================================
+-- Hooks/Events
+-- ================================================================
+
 function acutil.setupHook(newFunction, hookedFunctionStr)
 	local storeOldFunc = hookedFunctionStr .. "_OLD";
 	if _G[storeOldFunc] == nil then
@@ -191,10 +227,6 @@ function acutil.setupHook(newFunction, hookedFunctionStr)
 		_G[hookedFunctionStr] = newFunction;
 	end
 end
-
-_G['ADDONS'] = _G['ADDONS'] or {};
-_G['ADDONS']['EVENTS'] = _G['ADDONS']['EVENTS'] or {};
-_G['ADDONS']['EVENTS']['ARGS'] = _G['ADDONS']['EVENTS']['ARGS'] or {};
 
 function acutil.setupEvent(myAddon, functionNameAbs, myFunctionName)
 	local functionName = string.gsub(functionNameAbs, "%.", "");
@@ -226,6 +258,10 @@ function acutil.getEventArgs(eventMsg)
 	return unpack(_G['ADDONS']['EVENTS']['ARGS'][eventMsg]);
 end
 
+-- ================================================================
+-- Json
+-- ================================================================
+
 function acutil.saveJSON(path, tbl)
 	file,err = io.open(path, "w")
 	if err then return _,err end
@@ -237,20 +273,40 @@ end
 
 -- tblMerge is optional, use this to merge new pairs from tblMerge while
 -- preserving the pairs set in the pre-existing config file
-function acutil.loadJSON(path, tblMerge)
-	local file, err=io.open(path,"r")
-	if err then return _,err end
-
-	local t = file:read("*all");
-	file:close();
-
-	t = json.decode(t);
+function acutil.loadJSON(path, tblMerge, ignoreError)
+    -- opening the file
+	local file, err=io.open(path,"r");
+    local t = nil;
+    -- if a error happened 
+	if (err) then 
+        -- if the ignoreError is true
+        if (ignoreError) then
+            -- we simply set it as a empty json
+            t = {};
+        else 
+            -- if it's not, the error is returned
+            return _,err
+        end
+    else 
+        -- if nothing wrong happened, the file is read
+	    local content = file:read("*all");
+        file:close();
+        t = json.decode(content);
+    end
+    -- if there is another table to merge (like default options)
 	if tblMerge then
+        -- we merge it
 		t = acutil.mergeLeft(tblMerge, t)
+        -- and save it back to file
 		acutil.saveJSON(path, t);
 	end
+    -- returning the table
 	return t;
 end
+
+-- ================================================================
+-- Tables
+-- ================================================================
 
 -- merge left
 function acutil.mergeLeft(t1, t2)
@@ -264,12 +320,103 @@ function acutil.mergeLeft(t1, t2)
 	return t1
 end
 
+-- table length (when #table doesn't works)
+function acutil.tableLength(T)
+    local count = 0
+    for _ in pairs(T) do count = count + 1 end
+    return count
+end
+
+-- ================================================================
+-- Logging
+-- ================================================================
+
+function acutil.log(msg)     
+    CHAT_SYSTEM(acutil.tostring(msg));  
+end
+
+-- ================================================================
+-- Slash Commands
+-- ================================================================
+
 -- credits to fiote for some code https://github.com/fiote/
 acutil.slashCommands = acutil.slashCommands or {};
 
 function acutil.slashCommand(cmd, fn)
 	if cmd:sub(1,1) ~= "/" then cmd = "/" .. cmd end
 	acutil.slashCommands[cmd] = fn;
+end
+
+function acutil.slashSet(set)
+    if (not set.base) then return ui.SysMsg('[acutil.slashSet] missing "base" string.'); end
+    if (set.title) then set.title = set.title..'{nl}-----------{nl}'; else set.title = ''; end
+
+    local fnError = set.error;
+
+    if (not fnError) then
+        fnError = function(extraMsg)
+            if (extraMsg) then extraMsg = '{nl}-----------{nl}'..extraMsg..'{nl}-----------{nl}'; else extraMsg = ''; end
+            return 'Command not valid.{nl}'..extraMsg..'Type "'..set.base..'" for help.', '', 'Nope';
+        end
+    end
+
+    local executeSetCmd = function(fn,params) 
+        local p1, p2, p3;
+        if (params) then
+            p1,p2,p3 = fn(params);
+        else
+            p1,p2,p3 = fn(); 
+        end         
+        if (p1) then 
+            local msg = set.title..p1;
+            if (p2 and p3) then return ui.MsgBox(msg,p2,p3); end
+            if (p2) then return ui.MsgBox(msg,p2); end
+            return ui.MsgBox(msg);
+        end
+    end
+
+    local mainFn = function(words)
+        local word = table.remove(words,1);     
+        if (word == 'help') then word = nil; end
+
+        if (word) then
+            for cmd,data in pairs(set.cmds) do
+                if (cmd == word) then
+                    local fn = data.fn;     
+                    local qtexpected = data.nparams or 0;                   
+                    local qtfound = acutil.tableLength(words);
+                    if (qtfound ~= qtexpected) then
+                        return executeSetCmd(fnError,set.base..' '..cmd..' expects '..qtexpected..' params, not '..qtfound..'.');
+                    else
+                        local params = {}; 
+                        local n = 0;
+                        while (acutil.tableLength(words) > 0) do
+                            params[n] = table.remove(words,1);
+                            n = n+1;
+                        end
+                        return executeSetCmd(fn,params);
+                    end
+                end
+            end
+            return executeSetCmd(fnError,word..' is not a valid call.');
+        else
+            if (set.empty) then
+                return executeSetCmd(set.empty);
+            end
+            local lines = set.base..'{nl}Show addon help.{nl}-----------{nl}';
+            for cmd,data in pairs(set.cmds) do
+                local params = ' ';
+                local qtparams = data.nparams or 0;
+                for i = 1, qtparams do 
+                    params = params .. '$param'..i..' '; 
+                end
+                lines = lines .. set.base..' '..cmd..params..'{nl}-----------{nl}';
+            end
+            return ui.MsgBox(set.title..lines,'','Nope');
+        end
+    end
+   
+    acutil.slashCommand(set.base,mainFn);
 end
 
 function acutil.onUIChat(msg)
@@ -310,6 +457,11 @@ end
 if not acutil.uiChat_OLD then
 	acutil.uiChat_OLD = ui.Chat;
 end
+
 ui.Chat = acutil.onUIChat;
+
+-- ================================================================
+-- Return
+-- ================================================================
 
 return acutil;
