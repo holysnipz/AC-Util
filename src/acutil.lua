@@ -207,12 +207,12 @@ function acutil.getItemRarityColor(itemObj)
     end
     
     if (itemProp.setInfo ~= nil) then return "00FF00"; -- set piece 
-    elseif (grade == 0) then return "FFBF33"; -- premium
+    elseif (grade == 0) then return "FFBA03"; -- premium
     elseif (grade == 1) then return "FFFFFF"; -- common
     elseif (grade == 2) then return "108CFF"; -- rare
-    elseif (grade == 3) then return "9F30FF"; -- epic
-    elseif (grade == 4) then return "FF4F00"; -- degraded to unique, rip. Kappa
-    elseif (grade == 5) then return "EFEA00"; -- WTF did imc called this again? | oh, it's legendary now.
+    elseif (grade == 3) then return "AA40FF"; -- epic
+    elseif (grade == 4) then return "FF4F00"; -- Good old Red-ish Legendary that degraded to unique
+    elseif (grade == 5) then return "EFEA00"; -- All new Bright-Yellow legendary. (Solmiki/Lolo/Some event item. might useful in future)
     end 
     return "E1E1E1"; -- no grade (non-equipment items)
 end
