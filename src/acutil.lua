@@ -513,8 +513,8 @@ function ACUTIL_OPEN_ADDON_SYSMENU()
 		AUTO_CAST(btn);
 		btn:SetImage(v.icon);
 
-		local byFullString = string.find(v.functionString, ')') ~= nil;
-		btn:SetEventScript(ui.LBUTTONUP, v.functionString, byFullString);
+		--local byFullString = string.find(v.functionString, ')') ~= nil;
+		btn:SetEventScript(ui.LBUTTONUP, v.functionString);
 		btn:SetTextTooltip("{@st59}"..v.tooltip);
 
 		ACUTIL_sysmenuMargin = ACUTIL_sysmenuMargin-35;
@@ -543,7 +543,7 @@ function ACUTIL_SYSMENU_ICON(frame)
 		btn:SetImage("sysmenu_sys");
 		btn:SetUserValue("IS_VAR_ICON", "YES");
 
-		btn:SetEventScript(ui.LBUTTONUP, 'ACUTIL_OPEN_ADDON_SYSMENU()', true);
+		btn:SetEventScript(ui.LBUTTONUP, 'ACUTIL_OPEN_ADDON_SYSMENU');
 		btn:SetTextTooltip("{@st59}Addons");
 	end
 end
