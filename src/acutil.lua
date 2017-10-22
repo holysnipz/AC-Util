@@ -478,6 +478,8 @@ function acutil.addSysIcon(name, icon, tooltip, functionString)
 	ACUTIL_sysmenuAddons[name].icon = icon;
 	ACUTIL_sysmenuAddons[name].tooltip = tooltip;
 	ACUTIL_sysmenuAddons[name].functionString = functionString;
+
+	SYSMENU_CHECK_HIDE_VAR_ICONS_HOOKED(ui.GetFrame("sysmenu"), true);
 end
 
 function ACUTIL_OPEN_ADDON_SYSMENU()
@@ -498,60 +500,75 @@ function ACUTIL_OPEN_ADDON_SYSMENU()
 
 	local sysMenuFrame = ui.GetFrame("sysmenu");
 	local status = sysMenuFrame:GetChild("status");
+	local acutilbutton = sysMenuFrame:GetChild("acutiladdon");
 	local margin = status:GetMargin();
 	frm:Resize(1920 , 100);
 	frm:MoveFrame(sysMenuFrame:GetX(), sysMenuFrame:GetY()+35);
 	frm:SetSkinName("systemmenu_vertical 잠정제거");
 
+	ACUTIL_sysmenuMargin = acutilbutton:GetMargin().right;
+
 	for k,v in pairs(ACUTIL_sysmenuAddons) do
-		local addonButton = GET_CHILD(frm, "acutilAddon"..tostring(k), "ui::CButton");
-		if addonButton == nil then
-			local btn = frm:CreateOrGetControl("button", "acutilAddon"..tostring(k), status:GetWidth(), status:GetHeight(), ui.LEFT, ui.BOTTOM, 0, margin.top, margin.right, margin.bottom);
-			local btnMargin = btn:GetMargin();
-			btn:SetMargin(btnMargin.left, btnMargin.top, ACUTIL_sysmenuMargin, btnMargin.bottom);
-			btn:CloneFrom(status);
-			AUTO_CAST(btn);
-			btn:SetImage(v.icon);
+		local btn = frm:CreateOrGetControl("button", "acutilAddon"..tostring(k), status:GetWidth(), status:GetHeight(), ui.LEFT, ui.BOTTOM, 0, margin.top, margin.right, margin.bottom);
+		local btnMargin = btn:GetMargin();
+		btn:SetMargin(btnMargin.left, btnMargin.top, ACUTIL_sysmenuMargin, btnMargin.bottom);
+		btn:CloneFrom(status);
+		AUTO_CAST(btn);
+		btn:SetImage(v.icon);
 
-			local byFullString = string.find(v.functionString, ')') ~= nil;
-			btn:SetEventScript(ui.LBUTTONUP, v.functionString, byFullString);
-			btn:SetTextTooltip("{@st59}"..v.tooltip);
+		--local byFullString = string.find(v.functionString, ')') ~= nil;
+		btn:SetEventScript(ui.LBUTTONUP, v.functionString);
+		btn:SetTextTooltip("{@st59}"..v.tooltip);
 
-			ACUTIL_sysmenuMargin = ACUTIL_sysmenuMargin-35;
-		end
+		ACUTIL_sysmenuMargin = ACUTIL_sysmenuMargin-35;
 	end
 end
 
-function SYSMENU_CHECK_HIDE_VAR_ICONS_HOOKED(frame)
-	_G["SYSMENU_CHECK_HIDE_VAR_ICONS_OLD"](frame);
-
-	local extraBag = frame:GetChild('extraBag');
-	local status = frame:GetChild("status");
-	local offsetX = status:GetX() - extraBag:GetX();
-	local rightMargin = 0;
-	for idx = 0, frame:GetChildCount()-1 do
-		local t = frame:GetChildByIndex(idx):GetMargin().right;
-		if rightMargin < t then
-			rightMargin = t;
+function ACUTIL_SYSMENU_ICON(frame)
+	if acutil.tableLength(ACUTIL_sysmenuAddons) > 0 then
+		local extraBag = frame:GetChild('extraBag');
+		local status = frame:GetChild("status");
+		local offsetX = status:GetX() - extraBag:GetX();
+		local rightMargin = 0;
+		for idx = 0, frame:GetChildCount()-1 do
+			local t = frame:GetChildByIndex(idx):GetMargin().right;
+			if rightMargin < t and frame:GetChildByIndex(idx):GetName() ~= "acutiladdon" then
+				rightMargin = t;
+			end
 		end
+		rightMargin = rightMargin + offsetX;
+		local margin = status:GetMargin();
+		local btn = frame:CreateOrGetControl("button", "acutiladdon", status:GetWidth(), status:GetHeight(), ui.LEFT, ui.BOTTOM, 0, margin.top, margin.right, margin.bottom);
+		local btnMargin = btn:GetMargin();
+		btn:SetMargin(btnMargin.left, btnMargin.top, rightMargin, btnMargin.bottom);
+		btn:CloneFrom(status);
+		AUTO_CAST(btn);
+		btn:SetImage("sysmenu_sys");
+		btn:SetUserValue("IS_VAR_ICON", "YES");
+
+		btn:SetEventScript(ui.LBUTTONUP, 'ACUTIL_OPEN_ADDON_SYSMENU');
+		btn:SetTextTooltip("{@st59}Addons");
 	end
-	rightMargin = rightMargin + offsetX;
+end
 
-	local margin = status:GetMargin();
-	local btn = frame:CreateControl("button", "acutiladdon", status:GetWidth(), status:GetHeight(), ui.LEFT, ui.BOTTOM, 0, margin.top, margin.right, margin.bottom);
-	local btnMargin = btn:GetMargin();
-	btn:SetMargin(btnMargin.left, btnMargin.top, rightMargin, btnMargin.bottom);
-	btn:CloneFrom(status);
-	AUTO_CAST(btn);
-	btn:SetImage("sysmenu_sys");
-	btn:SetUserValue("IS_VAR_ICON", "YES");
+function SYSMENU_CHECK_HIDE_VAR_ICONS_HOOKED(frame, isAcutil)
+	if isAcutil == nil then
+		_G["SYSMENU_CHECK_HIDE_VAR_ICONS_OLD"](frame);
+	end
 
-	btn:SetEventScript(ui.LBUTTONUP, 'ACUTIL_OPEN_ADDON_SYSMENU()', true);
-	btn:SetTextTooltip("{@st59}Addons");
-	ACUTIL_sysmenuMargin = rightMargin;
+	ACUTIL_SYSMENU_ICON(frame);
+end
+
+function SYSMENU_CREATE_VARICON_HOOKED(frame, status, ctrlName, frameName, imageName, startX, offsetX, hotkeyName)
+	local margin = startX;
+	margin = _G["SYSMENU_CREATE_VARICON_OLD"](frame, status, ctrlName, frameName, imageName, startX, offsetX, hotkeyName);
+
+	ACUTIL_SYSMENU_ICON(frame);
+	return margin;
 end
 
 acutil.setupHook(SYSMENU_CHECK_HIDE_VAR_ICONS_HOOKED, "SYSMENU_CHECK_HIDE_VAR_ICONS");
+acutil.setupHook(SYSMENU_CREATE_VARICON_HOOKED, "SYSMENU_CREATE_VARICON");
 
 local sysmenuFrame = ui.GetFrame("sysmenu");
 SYSMENU_CHECK_HIDE_VAR_ICONS(sysmenuFrame);
