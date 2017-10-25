@@ -199,19 +199,22 @@ function acutil.getItemRarityColor(itemObj)
     local grade = itemObj.ItemGrade;
 
     if (itemObj.ItemType == "Recipe") then
-        local recipeGrade = tonumber(itemObj.Icon:match("misc(%d)")) - 1;
-        if (recipeGrade <= 0) then recipeGrade = 1 end;
-        grade = recipeGrade;
+        local recipeGrade = string.match(itemObj.Icon, "misc(%d)");
+        if recipeGrade ~= nil then
+            grade = tonumber(recipeGrade) - 1
+            grade = (grade > 1 and grade) or 1
+        end
     end
-
-    if (itemProp.setInfo ~= nil) then return "00FF00"; -- set piece
-    elseif (grade == 0) then return "FFBF33"; -- premium
+    
+    if (itemProp.setInfo ~= nil) then return "00FF00"; -- set piece 
+    elseif (grade == 0) then return "FFBA03"; -- premium
     elseif (grade == 1) then return "FFFFFF"; -- common
     elseif (grade == 2) then return "108CFF"; -- rare
-    elseif (grade == 3) then return "9F30FF"; -- epic
-    elseif (grade == 4) then return "FF4F00"; -- legendary
-    else return "E1E1E1"; -- no grade (non-equipment items)
-    end
+    elseif (grade == 3) then return "AA40FF"; -- epic
+    elseif (grade == 4) then return "FF4F00"; -- Good old Red-ish Legendary that degraded to unique
+    elseif (grade == 5) then return "EFEA00"; -- All new Bright-Yellow legendary. (Solmiki/Lolo/Some event item. might useful in future)
+    end 
+    return "E1E1E1"; -- no grade (non-equipment items)
 end
 
 -- ================================================================
