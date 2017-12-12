@@ -527,7 +527,7 @@ end
 function ACUTIL_SYSMENU_ICON(frame)
 	if acutil.tableLength(ACUTIL_sysmenuAddons) > 0 then
 		local extraBag = frame:GetChild('extraBag');
-		local status = frame:GetChild("rankBtn");
+		local status = frame:GetChild("rankBtn") or frame:GetChild("status");
 		local offsetX = status:GetX() - extraBag:GetX();
 		local rightMargin = 0;
 		for idx = 0, frame:GetChildCount()-1 do
