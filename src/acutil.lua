@@ -503,7 +503,7 @@ function ACUTIL_OPEN_ADDON_SYSMENU()
 	local acutilbutton = sysMenuFrame:GetChild("acutiladdon");
 	local margin = status:GetMargin();
 	frm:Resize(1920 , 100);
-	frm:MoveFrame(sysMenuFrame:GetX(), sysMenuFrame:GetY()+39);
+	frm:MoveFrame(sysMenuFrame:GetX(), sysMenuFrame:GetY()+35);
 	frm:SetSkinName("systemmenu_vertical 잠정제거");
 
 	ACUTIL_sysmenuMargin = acutilbutton:GetMargin().right;
@@ -520,7 +520,7 @@ function ACUTIL_OPEN_ADDON_SYSMENU()
 		btn:SetEventScript(ui.LBUTTONUP, v.functionString);
 		btn:SetTextTooltip("{@st59}"..v.tooltip);
 
-		ACUTIL_sysmenuMargin = ACUTIL_sysmenuMargin-35;
+		ACUTIL_sysmenuMargin = ACUTIL_sysmenuMargin-39;
 	end
 end
 
