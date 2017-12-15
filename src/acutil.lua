@@ -540,7 +540,7 @@ function ACUTIL_SYSMENU_ICON(frame)
 		local btn = frame:CreateOrGetControl("button", "acutiladdon", extraBag:GetWidth(), extraBag:GetHeight(), ui.LEFT, ui.BOTTOM, 0, margin.top, margin.right, margin.bottom);
 		local btnMargin = btn:GetMargin();
 		btn:SetMargin(btnMargin.left, btnMargin.top, rightMargin, btnMargin.bottom);
-		btn:CloneFrom(status);
+		btn:CloneFrom(extraBag);
 		AUTO_CAST(btn);
 		btn:SetImage("sysmenu_sys");
 		btn:SetUserValue("IS_VAR_ICON", "YES");
