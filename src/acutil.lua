@@ -503,7 +503,7 @@ function ACUTIL_OPEN_ADDON_SYSMENU()
 	local acutilbutton = sysMenuFrame:GetChild("acutiladdon");
 	local margin = status:GetMargin();
 	frm:Resize(1920 , 100);
-	frm:MoveFrame(sysMenuFrame:GetX(), sysMenuFrame:GetY()+39);
+	frm:MoveFrame(sysMenuFrame:GetX(), sysMenuFrame:GetY()+35);
 	frm:SetSkinName("systemmenu_vertical 잠정제거");
 
 	ACUTIL_sysmenuMargin = acutilbutton:GetMargin().right;
@@ -520,12 +520,13 @@ function ACUTIL_OPEN_ADDON_SYSMENU()
 		btn:SetEventScript(ui.LBUTTONUP, v.functionString);
 		btn:SetTextTooltip("{@st59}"..v.tooltip);
 
-		ACUTIL_sysmenuMargin = ACUTIL_sysmenuMargin-35;
+		ACUTIL_sysmenuMargin = ACUTIL_sysmenuMargin-39;
 	end
 end
 
 function ACUTIL_SYSMENU_ICON(frame)
 	if acutil.tableLength(ACUTIL_sysmenuAddons) > 0 then
+		local extraBag = frame:GetChild('extraBag');
 		local offsetX = 39;
 		local rightMargin = 0;
 		for idx = 0, frame:GetChildCount()-1 do
@@ -535,11 +536,11 @@ function ACUTIL_SYSMENU_ICON(frame)
 			end
 		end
 		rightMargin = rightMargin + offsetX;
-		local margin = status:GetMargin();
-		local btn = frame:CreateOrGetControl("button", "acutiladdon", status:GetWidth(), status:GetHeight(), ui.LEFT, ui.BOTTOM, 0, margin.top, margin.right, margin.bottom);
+		local margin = extraBag:GetMargin();
+		local btn = frame:CreateOrGetControl("button", "acutiladdon", extraBag:GetWidth(), extraBag:GetHeight(), ui.LEFT, ui.BOTTOM, 0, margin.top, margin.right, margin.bottom);
 		local btnMargin = btn:GetMargin();
 		btn:SetMargin(btnMargin.left, btnMargin.top, rightMargin, btnMargin.bottom);
-		btn:CloneFrom(status);
+		btn:CloneFrom(extraBag);
 		AUTO_CAST(btn);
 		btn:SetImage("sysmenu_sys");
 		btn:SetUserValue("IS_VAR_ICON", "YES");
