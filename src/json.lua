@@ -40,6 +40,20 @@ local escape_char_map = {
   [ "\t" ] = "\\t",
 }
 
+-- Custom sub string function since ToS' seems to have some weird limit
+-- Fixes loading files with sizes > 2048
+local function strsub(str, start, _end)
+	start = start and start or 1;
+	_end = _end and _end or 1;
+	str = tostring(str);
+	
+	local len = _end-start+1;
+	local str_ = '';
+	str = str:gsub(".",'',start-1);
+	str:gsub(".",function(c) str_ = str_..c end,len);
+	return str_;
+end
+
 local escape_char_map_inv = { [ "\\/" ] = "/" }
 for k, v in pairs(escape_char_map) do
   escape_char_map_inv[v] = k
@@ -204,8 +218,8 @@ end
 
 
 local function parse_unicode_escape(s)
-  local n1 = tonumber( s:sub(3, 6),  16 )
-  local n2 = tonumber( s:sub(9, 12), 16 )
+  local n1 = tonumber( strsub(s, 3, 6),  16 )
+  local n2 = tonumber( strsub(s, 9, 12), 16 )
   -- Surrogate pair?
   if n2 then
     return codepoint_to_utf8((n1 - 0xd800) * 0x400 + (n2 - 0xdc00) + 0x10000)
@@ -395,20 +409,5 @@ function json.decode(str)
   end
   return res
 end
-
--- Custom sub string function since ToS' seems to have some weird limit
--- Fixes loading files with sizes > 2048
-function strsub(str, start, _end)
-	start = start and start or 1;
-	_end = _end and _end or 1;
-	str = tostring(str);
-	
-	local len = _end-start+1;
-	local str_ = '';
-	str = str:gsub(".",'',start-1);
-	str:gsub(".",function(c) str_ = str_..c end,len);
-	return str_;
-end
-
 
 return json
